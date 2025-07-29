@@ -206,8 +206,8 @@ export function validateFastMCPInstance(instance: any): {
 } {
   const issues: string[] = []
 
-  const expectedMethods = ["addTool", "addResource", "addResourceTemplate", "addPrompt", "embedded", "start", "stop"]
-  const expectedProperties = ["server", "capabilities"]
+  const expectedMethods = ["addTool", "addResource", "addResourceTemplate", "addPrompt", "start", "stop"]
+  const expectedProperties = ["options", "sessions"]
 
   for (const method of expectedMethods) {
     if (typeof instance[method] !== "function") {

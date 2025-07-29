@@ -27,5 +27,12 @@ export default defineConfig({
       // Ensure we're testing against the source files
       'fastmcp-cloudflare': './src/index.ts',
     },
+    conditions: ['node', 'import', 'module', 'default'],
+  },
+  optimizeDeps: {
+    include: ['fastmcp'],
+  },
+  ssr: {
+    noExternal: ['fastmcp'],
   },
 });

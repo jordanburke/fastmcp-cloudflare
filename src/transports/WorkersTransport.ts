@@ -3,7 +3,15 @@
  * Implements MCP transport using Workers Request/Response pattern
  */
 
-import { Transport } from "fastmcp"
+// Note: Using a minimal Transport interface since the full one is not exported
+interface Transport {
+  onmessage?: (message: any) => void
+  onclose?: () => void
+  onerror?: (error: Error) => void
+  send(message: any): void
+  start(): Promise<void>
+  close(): Promise<void>
+}
 import { assertWorkersRuntime } from "../runtime/detection.js"
 
 /**
@@ -202,9 +210,9 @@ export class WorkersTransport implements Transport {
     const origin = request.headers.get("origin")
     const { origins, credentials } = this.options.cors
 
-    if (origins.includes("*")) {
+    if (origins && origins.includes("*")) {
       headers["Access-Control-Allow-Origin"] = "*"
-    } else if (origin && origins.includes(origin)) {
+    } else if (origin && origins && origins.includes(origin)) {
       headers["Access-Control-Allow-Origin"] = origin
     }
 
@@ -230,11 +238,17 @@ export class WorkersTransport implements Transport {
     }
   }
 
-  close(): void {
+  async start(): Promise<void> {
+    // No startup needed for Workers transport
+    return Promise.resolve()
+  }
+
+  async close(): Promise<void> {
     this.closeHandlers.forEach((handler) => handler())
     this.messageHandlers.clear()
     this.closeHandlers.clear()
     this.errorHandlers.clear()
+    return Promise.resolve()
   }
 
   addEventListener(event: string, handler: any): void {

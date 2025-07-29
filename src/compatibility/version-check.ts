@@ -9,9 +9,9 @@ import { FastMCP } from "fastmcp"
  * Supported FastMCP version ranges
  */
 export const SUPPORTED_FASTMCP_VERSIONS = {
-  minimum: "1.0.0",
+  minimum: "1.27.0",
   maximum: "2.0.0", // Exclusive - will need updating for v2
-  tested: ["1.0.0"], // Specific versions we've tested against
+  tested: ["1.27.7"], // Specific versions we've tested against
 }
 
 /**
@@ -19,18 +19,7 @@ export const SUPPORTED_FASTMCP_VERSIONS = {
  */
 export const EXPECTED_FASTMCP_API = {
   // Core class and methods we use
-  FastMCP: [
-    "constructor",
-    "addTool",
-    "addResource",
-    "addResourceTemplate",
-    "addPrompt",
-    "embedded",
-    "start",
-    "stop",
-    "server", // property
-    "capabilities", // property
-  ],
+  FastMCP: ["constructor", "addTool", "addResource", "addResourceTemplate", "addPrompt", "start", "stop"],
 
   // Tool definition interface
   ToolDefinition: ["name", "description", "parameters", "execute", "annotations", "canAccess", "timeoutMs"],
@@ -44,7 +33,7 @@ export const EXPECTED_FASTMCP_API = {
  */
 export function checkFastMCPCompatibility(): {
   compatible: boolean
-  version?: string
+  version?: string | undefined
   issues: string[]
 } {
   const issues: string[] = []
@@ -93,19 +82,41 @@ export function checkFastMCPCompatibility(): {
  */
 function isVersionSupported(version: string): boolean {
   try {
-    const [major, minor, patch] = version.split(".").map(Number)
-    const [minMajor, minMinor, minPatch] = SUPPORTED_FASTMCP_VERSIONS.minimum.split(".").map(Number)
-    const [maxMajor, maxMinor, maxPatch] = SUPPORTED_FASTMCP_VERSIONS.maximum.split(".").map(Number)
+    const versionParts = version.split(".").map(Number)
+    const minParts = SUPPORTED_FASTMCP_VERSIONS.minimum.split(".").map(Number)
+    const maxParts = SUPPORTED_FASTMCP_VERSIONS.maximum.split(".").map(Number)
+
+    if (versionParts.length !== 3 || minParts.length !== 3 || maxParts.length !== 3) {
+      return false
+    }
+
+    const [major, minor, patch] = versionParts
+    const [minMajor, minMinor, minPatch] = minParts
+    const [maxMajor, maxMinor, maxPatch] = maxParts
+
+    // Check for NaN values
+    if (
+      [major, minor, patch, minMajor, minMinor, minPatch, maxMajor, maxMinor, maxPatch].some(
+        (n) => n === undefined || isNaN(n),
+      )
+    ) {
+      return false
+    }
+
+    // Type assertions since we've checked they're not undefined
+    const [maj, min, pat] = [major!, minor!, patch!]
+    const [minMaj, minMin, minPat] = [minMajor!, minMinor!, minPatch!]
+    const [maxMaj, maxMin, maxPat] = [maxMajor!, maxMinor!, maxPatch!]
 
     // Check minimum version
-    if (major < minMajor) return false
-    if (major === minMajor && minor < minMinor) return false
-    if (major === minMajor && minor === minMinor && patch < minPatch) return false
+    if (maj < minMaj) return false
+    if (maj === minMaj && min < minMin) return false
+    if (maj === minMaj && min === minMin && pat < minPat) return false
 
     // Check maximum version (exclusive)
-    if (major >= maxMajor) return false
-    if (major === maxMajor - 1 && minor >= maxMinor) return false
-    if (major === maxMajor - 1 && minor === maxMinor - 1 && patch >= maxPatch) return false
+    if (maj >= maxMaj) return false
+    if (maj === maxMaj - 1 && min >= maxMin) return false
+    if (maj === maxMaj - 1 && min === maxMin - 1 && pat >= maxPat) return false
 
     return true
   } catch {
@@ -193,7 +204,7 @@ export function assertFastMCPCompatibility(): void {
  */
 export function getCompatibilityReport(): {
   compatible: boolean
-  version?: string
+  version?: string | undefined
   issues: string[]
   supportedVersions: typeof SUPPORTED_FASTMCP_VERSIONS
   timestamp: string

@@ -46,7 +46,7 @@ server.addTool({
     readOnlyHint: true,
     openWorldHint: false,
   },
-  execute: async (args) => {
+  execute: async (args: { name: string; language?: 'en' | 'es' | 'fr' | 'de' }) => {
     const greetings = {
       en: `Hello, ${args.name}! Welcome to our MCP server running on Cloudflare Workers.`,
       es: `¡Hola, ${args.name}! Bienvenido a nuestro servidor MCP ejecutándose en Cloudflare Workers.`,
@@ -55,7 +55,7 @@ server.addTool({
     };
 
     const language = args.language || 'en';
-    return greetings[language];
+    return greetings[language as keyof typeof greetings];
   },
 });
 
@@ -69,7 +69,7 @@ server.addTool({
     readOnlyHint: true,
     openWorldHint: false,
   },
-  execute: async (args, context) => {
+  execute: async (_args: Record<string, never>, _context?: any) => {
     // In a real Workers environment, you could access colo, ray ID, etc.
     const info = {
       server: "FastMCP on Cloudflare Workers",
@@ -106,7 +106,7 @@ server.addTool({
     readOnlyHint: true,
     openWorldHint: true, // This tool interacts with external services
   },
-  execute: async (args) => {
+  execute: async (args: { url: string; include_headers?: boolean }) => {
     try {
       const response = await fetch(args.url, {
         headers: {
@@ -122,7 +122,10 @@ server.addTool({
       const result = [`Content from ${args.url}:\n\n${content.slice(0, 1000)}${content.length > 1000 ? '...' : ''}`];
 
       if (args.include_headers) {
-        const headers = Object.fromEntries(response.headers.entries());
+        const headers: Record<string, string> = {};
+        response.headers.forEach((value, key) => {
+          headers[key] = value;
+        });
         result.push(`\n\nResponse Headers:\n${JSON.stringify(headers, null, 2)}`);
       }
 
@@ -179,7 +182,7 @@ server.addPrompt({
       required: false,
     },
   ],
-  load: async (args) => {
+  load: async (args: { functionality: string; apis?: string }) => {
     const apis = args.apis ? ` using ${args.apis}` : '';
     return `Generate a Cloudflare Workers script that implements ${args.functionality}${apis}. 
 

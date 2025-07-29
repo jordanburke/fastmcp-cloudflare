@@ -8,7 +8,7 @@ import { isCloudflareWorkers } from "./detection.js"
  * Polyfill for Node.js EventEmitter in Workers environment
  */
 export class WorkersEventEmitter {
-  private events = new Map<string, (...args: any[]) => void>()
+  private events = new Map<string, Array<(...args: any[]) => void>>()
 
   on(event: string, listener: (...args: any[]) => void): this {
     if (!this.events.has(event)) {
@@ -40,7 +40,7 @@ export class WorkersEventEmitter {
   emit(event: string, ...args: any[]): boolean {
     const listeners = this.events.get(event)
     if (listeners && listeners.length > 0) {
-      listeners.forEach((listener) => {
+      listeners.forEach((listener: (...args: any[]) => void) => {
         try {
           listener.apply(this, args)
         } catch (error) {
@@ -127,7 +127,11 @@ type BufferEncoding =
 export const BufferPolyfill = {
   from(data: ArrayBuffer | string, encoding?: BufferEncoding): Buffer {
     if (typeof Buffer !== "undefined") {
-      return Buffer.from(data, encoding)
+      if (typeof data === "string") {
+        return Buffer.from(data, encoding)
+      } else {
+        return Buffer.from(data)
+      }
     }
 
     // Fallback implementation for environments without Buffer

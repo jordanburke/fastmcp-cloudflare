@@ -87,7 +87,7 @@ describe('FastMCP Compatibility', () => {
       expect(typeof server.addResource).toBe('function');
       expect(typeof server.addResourceTemplate).toBe('function');
       expect(typeof server.addPrompt).toBe('function');
-      expect(typeof server.embedded).toBe('function');
+      expect(Array.isArray(server.sessions)).toBe(true);
       expect(typeof server.start).toBe('function');
       expect(typeof server.stop).toBe('function');
     });
@@ -98,8 +98,9 @@ describe('FastMCP Compatibility', () => {
         version: '1.0.0',
       });
 
-      expect(server).toHaveProperty('server');
-      expect(server).toHaveProperty('capabilities');
+      expect(server).toHaveProperty('options');
+      expect(server.options).toHaveProperty('name', 'Test Server');
+      expect(server.options).toHaveProperty('version', '1.0.0');
     });
   });
 
@@ -274,18 +275,12 @@ describe('FastMCP Compatibility', () => {
       }).not.toThrow();
     });
 
-    it('should handle embedded resources', async () => {
-      // First add a resource
-      server.addResource({
-        uri: 'test://embedded',
-        name: 'Embedded Test Resource',
-        load: async () => ({ text: 'embedded content' }),
-      });
-
-      // Should be able to call embedded method
-      expect(() => {
-        server.embedded('test://embedded');
-      }).not.toThrow();
+    it('should have sessions property for session management', () => {
+      // The sessions property should be available for managing client sessions
+      expect(Array.isArray(server.sessions)).toBe(true);
+      
+      // Should be an empty array initially
+      expect(server.sessions).toHaveLength(0);
     });
   });
 });
