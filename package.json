@@ -14,6 +14,7 @@
     "test:compatibility": "vitest run tests/unit/compatibility.test.ts",
     "test:ci": "vitest run --config vitest.config.ci.ts",
     "test:simple": "vitest run tests/unit/compatibility-simple.test.ts",
+    "test:compatibility:ci": "vitest run tests/unit/compatibility-ci.test.ts",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json}\"",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
@@ -81,7 +82,7 @@
     "url": "https://github.com/jordanburke/fastmcp-cloudflare/issues"
   },
   "engines": {
-    "nodep": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "files": [
     "dist",

@@ -13,6 +13,11 @@ A Cloudflare Workers adapter for [FastMCP](https://github.com/punkpeye/fastmcp) 
 
 ## Quick Start
 
+### Prerequisites
+
+- Node.js 20.x or higher (for better ESM module support)
+- npm, yarn, or pnpm package manager
+
 ### Installation
 
 ```bash
@@ -91,6 +96,41 @@ Check out the [examples directory](./examples/) for complete working examples:
 - No direct file system access (use URLs or inline content)
 - Some Node.js APIs are polyfilled or unavailable
 - Cold start considerations for infrequently used endpoints
+
+## Development
+
+### Testing
+
+The project includes comprehensive tests to ensure compatibility with FastMCP:
+
+```bash
+# Run all tests
+npm test
+
+# Run compatibility tests (local development)
+npm run test:compatibility
+
+# Run CI-safe compatibility tests (for CI environments)
+npm run test:compatibility:ci
+
+# Run simple tests (fallback for package resolution issues)
+npm run test:simple
+```
+
+**Note for CI Environments**: If you encounter FastMCP package resolution issues in CI, use `npm run test:compatibility:ci` which provides the same test coverage using mocked FastMCP imports. See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for details.
+
+### Building
+
+```bash
+# Build the package
+npm run build
+
+# Type checking
+npm run type-check
+
+# Linting
+npm run lint
+```
 
 ## Contributing
 

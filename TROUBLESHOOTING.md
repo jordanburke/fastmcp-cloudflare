@@ -14,11 +14,14 @@ This typically occurs in CI environments or with certain package managers (espec
 
 ### Solutions
 
-#### Solution 1: Use Alternative Test Configuration
-If the main test suite fails due to package resolution, use the CI-specific configuration:
+#### Solution 1: Use CI-Safe Compatibility Tests
+If the main compatibility test fails due to package resolution, use the CI-safe version that mocks FastMCP:
 
 ```bash
-# Instead of npm test, use:
+# Instead of npm run test:compatibility, use:
+npm run test:compatibility:ci
+
+# Or use the CI-specific configuration:
 npm run test:ci
 
 # Or run only the simple compatibility tests:
@@ -83,9 +86,25 @@ npm test
 The FastMCP package uses ESM (ECMAScript modules) and has a specific export configuration that some build tools or CI environments may not resolve correctly. This is particularly common with:
 
 1. **Different Node.js versions** - Older versions may not handle ESM exports the same way
+   - Node.js 16.x-18.x: May have ESM resolution issues
+   - Node.js 20.x+: Better ESM support (recommended)
 2. **Package manager differences** - pnpm's symlink strategy vs npm's flat structure
 3. **CI environment differences** - Limited file system permissions or different module resolution paths
 4. **Vitest/Vite version differences** - Different versions handle module resolution differently
+
+#### Solution 0: Update Node.js Version (Recommended)
+The most reliable fix is to use Node.js 20.x or higher:
+
+```yaml
+# In GitHub Actions:
+- uses: actions/setup-node@v4
+  with:
+    node-version: '20.x'
+
+# Or locally:
+nvm install 20
+nvm use 20
+```
 
 ### Verification
 

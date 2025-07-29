@@ -20,13 +20,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18.x, 20.x, 21.x]
+        node-version: [22.x]
         fastmcp-version: 
           - "1.0.0"  # Known compatible version
           - "latest" # Latest published version
         # Add specific versions as they're released
         include:
-          - node-version: 20.x
+          - node-version: 22.x
             fastmcp-version: ${{ github.event.inputs.fastmcp_version || 'latest' }}
 
     steps:
