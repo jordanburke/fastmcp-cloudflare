@@ -1,0 +1,227 @@
+name: FastMCP Compatibility Check
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run compatibility check daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      fastmcp_version:
+        description: 'Specific FastMCP version to test against'
+        required: false
+        default: 'latest'
+
+jobs:
+  compatibility-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 21.x]
+        fastmcp-version: 
+          - "1.0.0"  # Known compatible version
+          - "latest" # Latest published version
+        # Add specific versions as they're released
+        include:
+          - node-version: 20.x
+            fastmcp-version: ${{ github.event.inputs.fastmcp_version || 'latest' }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install specific FastMCP version
+      run: |
+        if [ "${{ matrix.fastmcp-version }}" = "latest" ]; then
+          npm install fastmcp@latest
+        else
+          npm install fastmcp@${{ matrix.fastmcp-version }}
+        fi
+
+    - name: Get FastMCP version
+      id: fastmcp-version
+      run: |
+        VERSION=$(npm list fastmcp --depth=0 --json | jq -r '.dependencies.fastmcp.version')
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "FastMCP version: $VERSION"
+
+    - name: Run compatibility tests
+      run: npm run test:compatibility
+      env:
+        FASTMCP_VERSION: ${{ steps.fastmcp-version.outputs.version }}
+
+    - name: Run full test suite
+      run: npm test
+
+    - name: Build package
+      run: npm run build
+
+    - name: Type check
+      run: npm run type-check
+
+    - name: Report compatibility status
+      if: always()
+      run: |
+        echo "## Compatibility Test Results" >> $GITHUB_STEP_SUMMARY
+        echo "- **Node.js Version**: ${{ matrix.node-version }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **FastMCP Version**: ${{ steps.fastmcp-version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Test Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+
+  compatibility-matrix:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Test against multiple FastMCP versions
+      run: |
+        echo "# FastMCP Compatibility Matrix" > compatibility-report.md
+        echo "Generated on: $(date)" >> compatibility-report.md
+        echo "" >> compatibility-report.md
+        echo "| FastMCP Version | Compatible | Issues |" >> compatibility-report.md
+        echo "|----------------|------------|--------|" >> compatibility-report.md
+        
+        # Test against known versions
+        VERSIONS=("1.0.0" "latest")
+        
+        for version in "${VERSIONS[@]}"; do
+          echo "Testing FastMCP $version..."
+          
+          # Install specific version
+          if [ "$version" = "latest" ]; then
+            npm install fastmcp@latest
+          else
+            npm install fastmcp@$version
+          fi
+          
+          # Get actual installed version
+          ACTUAL_VERSION=$(npm list fastmcp --depth=0 --json | jq -r '.dependencies.fastmcp.version')
+          
+          # Run compatibility test
+          if npm run test:compatibility; then
+            echo "| $ACTUAL_VERSION | ✅ Yes | None |" >> compatibility-report.md
+          else
+            echo "| $ACTUAL_VERSION | ❌ No | See test output |" >> compatibility-report.md
+          fi
+        done
+        
+        cat compatibility-report.md
+
+    - name: Upload compatibility report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: compatibility-report
+        path: compatibility-report.md
+
+  breaking-change-detection:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 2  # Need previous commit for comparison
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Check for breaking changes in compatibility
+      run: |
+        # Check if compatibility files were modified
+        if git diff --name-only HEAD~1 HEAD | grep -E "(compatibility|version-check|interface-validation)"; then
+          echo "⚠️  Compatibility-related files were modified"
+          echo "Running extended compatibility tests..."
+          
+          # Run compatibility tests with verbose output
+          npm run test:compatibility -- --reporter=verbose
+          
+          # Check if supported versions changed
+          if git diff HEAD~1 HEAD -- src/compatibility/version-check.ts | grep -E "(SUPPORTED_FASTMCP_VERSIONS|minimum|maximum)"; then
+            echo "🚨 Supported version range was modified!"
+            echo "Please ensure this change is intentional and update documentation."
+            
+            # Extract the changes
+            echo "Changes to supported versions:"
+            git diff HEAD~1 HEAD -- src/compatibility/version-check.ts
+          fi
+        else
+          echo "✅ No compatibility-related changes detected"
+        fi
+
+    - name: Create issue on compatibility failure
+      if: failure()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const title = 'FastMCP Compatibility Issue Detected';
+          const body = `
+          ## Compatibility Issue
+          
+          A compatibility issue was detected in commit ${{ github.sha }}.
+          
+          **Details:**
+          - Branch: ${{ github.ref_name }}
+          - Commit: ${{ github.sha }}
+          - Workflow: ${{ github.workflow }}
+          
+          **Action Required:**
+          1. Review the compatibility test failures
+          2. Update compatibility definitions if needed
+          3. Update documentation if supported versions changed
+          
+          **Logs:**
+          Check the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.
+          `;
+          
+          // Check if issue already exists
+          const existingIssues = await github.rest.issues.listForRepo({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            state: 'open',
+            labels: 'compatibility'
+          });
+          
+          const hasExistingIssue = existingIssues.data.some(issue => 
+            issue.title.includes('Compatibility Issue')
+          );
+          
+          if (!hasExistingIssue) {
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['compatibility', 'bug', 'needs-investigation']
+            });
+          }

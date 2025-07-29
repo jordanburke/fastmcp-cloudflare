@@ -1,0 +1,81 @@
+{
+  "name": "fastmcp-cloudflare",
+  "version": "0.1.0",
+  "description": "Cloudflare Workers adapter for FastMCP - build MCP servers that run on Cloudflare's edge network",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsup",
+    "dev": "wrangler dev",
+    "deploy": "wrangler publish",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:compatibility": "vitest run tests/unit/compatibility.test.ts",
+    "lint": "eslint src --ext .ts",
+    "type-check": "tsc --noEmit",
+    "prepublishOnly": "npm run build && npm run test && npm run lint"
+  },
+  "keywords": [
+    "mcp",
+    "cloudflare",
+    "workers",
+    "fastmcp",
+    "model-context-protocol",
+    "edge"
+  ],
+  "author": "FastMCP Community",
+  "license": "MIT",
+  "peerDependencies": {
+    "fastmcp": "^1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "fastmcp": {
+      "optional": false
+    }
+  },
+  "dependencies": {
+    "@cloudflare/workers-types": "^4.20241127.0",
+    "@standard-schema/spec": "^1.0.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.13",
+    "eslint": "^9.30.1",
+    "fastmcp": "^1.0.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4",
+    "wrangler": "^3.78.12"
+  },
+  "tsup": {
+    "entry": [
+      "src/index.ts"
+    ],
+    "format": [
+      "esm"
+    ],
+    "dts": true,
+    "splitting": true,
+    "sourcemap": true,
+    "clean": true,
+    "target": "es2022"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jordanburke/fastmcp-cloudflare.git"
+  },
+  "homepage": "https://github.com/jordanburke/fastmcp-cloudflare#readme",
+  "bugs": {
+    "url": "https://github.com/jordanburke/fastmcp-cloudflare/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CLAUDE.md"
+  ]
+}

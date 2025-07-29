@@ -1,0 +1,80 @@
+# Example Wrangler configuration for FastMCP on Cloudflare Workers
+# Copy this file to wrangler.toml and customize for your project
+
+name = "my-fastmcp-server"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# Optional: Configure custom routes
+# routes = [
+#   { pattern = "mcp.yourdomain.com/*", zone_name = "yourdomain.com" }
+# ]
+
+# Environment variables
+[vars]
+ENVIRONMENT = "development"
+LOG_LEVEL = "info"
+DEBUG_MODE = "true"
+
+# Production environment
+[env.production]
+name = "my-fastmcp-server-prod"
+vars = { ENVIRONMENT = "production", LOG_LEVEL = "warn", DEBUG_MODE = "false" }
+
+# Staging environment
+[env.staging]
+name = "my-fastmcp-server-staging"
+vars = { ENVIRONMENT = "staging", LOG_LEVEL = "info", DEBUG_MODE = "true" }
+
+# KV namespace bindings (for persistent storage)
+# [[kv_namespaces]]
+# binding = "MCP_CACHE"
+# id = "your-kv-namespace-id"
+# preview_id = "your-preview-kv-namespace-id"
+
+# D1 database bindings (for SQL storage)
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "mcp-database"
+# database_id = "your-database-id"
+
+# R2 bucket bindings (for object storage)
+# [[r2_buckets]]
+# binding = "STORAGE"
+# bucket_name = "mcp-files"
+
+# Durable Object bindings (for stateful objects)
+# [[durable_objects.bindings]]
+# name = "MCP_SESSION"
+# class_name = "MCPSession"
+
+# Workers Analytics Engine (for analytics)
+# [[analytics_engine_datasets]]
+# binding = "ANALYTICS"
+
+# Queue bindings (for background processing)
+# [[queues.producers]]
+# binding = "MCP_QUEUE"
+# queue = "mcp-background-tasks"
+
+# Service bindings (for calling other Workers)
+# [[services]]
+# binding = "AUTH_SERVICE"
+# service = "auth-worker"
+
+# Cron triggers (for scheduled tasks)
+# [triggers]
+# crons = ["0 0 * * *"] # Daily at midnight
+
+# Limits and configuration
+[limits]
+# cpu_ms = 30000  # Maximum CPU time per request (milliseconds)
+
+# Compatibility flags for specific features
+# compatibility_flags = [
+#   "nodejs_compat",           # Node.js compatibility layer
+#   "nodejs_als",              # AsyncLocalStorage support
+#   "fetch_standard_url",      # Standard URL parsing
+#   "brotli_content_encoding", # Brotli compression support
+# ]
