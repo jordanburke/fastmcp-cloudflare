@@ -1,9 +1,7 @@
 import { defineConfig } from 'vitest/config';
 import path from 'path';
-import { resolveFastMCP } from './vitest.fastmcp.resolver.js';
 
 export default defineConfig({
-  plugins: [resolveFastMCP()],
   test: {
     globals: true,
     environment: 'node',
