@@ -69,9 +69,9 @@ describe('FastMCP Compatibility (CI Safe)', () => {
 
     it('should have supported versions defined', () => {
       expect(SUPPORTED_FASTMCP_VERSIONS).toBeDefined();
-      expect(SUPPORTED_FASTMCP_VERSIONS.minimum).toBe('1.27.0');
-      expect(SUPPORTED_FASTMCP_VERSIONS.maximum).toBe('2.0.0');
-      expect(SUPPORTED_FASTMCP_VERSIONS.tested).toContain('1.27.7');
+      expect(SUPPORTED_FASTMCP_VERSIONS.minimum).toBe('3.0.0');
+      expect(SUPPORTED_FASTMCP_VERSIONS.maximum).toBe('4.0.0');
+      expect(SUPPORTED_FASTMCP_VERSIONS.tested).toContain('3.12.0');
     });
 
     it('should provide comprehensive compatibility report', () => {

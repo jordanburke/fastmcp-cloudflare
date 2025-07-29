@@ -22,7 +22,8 @@ jobs:
       matrix:
         node-version: [22.x]
         fastmcp-version: 
-          - "1.0.0"  # Known compatible version
+          - "3.0.0"  # First v3 release
+          - "3.12.0" # Current tested version
           - "latest" # Latest published version
         # Add specific versions as they're released
         include:
@@ -137,7 +138,7 @@ jobs:
         echo "|----------------|------------|--------|" >> compatibility-report.md
         
         # Test against known versions
-        VERSIONS=("1.0.0" "latest")
+        VERSIONS=("3.0.0" "3.12.0" "latest")
         
         for version in "${VERSIONS[@]}"; do
           echo "Testing FastMCP $version..."

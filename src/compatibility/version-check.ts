@@ -9,9 +9,9 @@ import { FastMCP } from "fastmcp"
  * Supported FastMCP version ranges
  */
 export const SUPPORTED_FASTMCP_VERSIONS = {
-  minimum: "1.27.0",
-  maximum: "2.0.0", // Exclusive - will need updating for v2
-  tested: ["1.27.7"], // Specific versions we've tested against
+  minimum: "3.0.0",
+  maximum: "4.0.0", // Exclusive - will need updating for v4
+  tested: ["3.12.0"], // Specific versions we've tested against
 }
 
 /**

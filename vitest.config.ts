@@ -1,6 +1,9 @@
 import { defineConfig } from 'vitest/config';
+import path from 'path';
+import { resolveFastMCP } from './vitest.fastmcp.resolver.js';
 
 export default defineConfig({
+  plugins: [resolveFastMCP()],
   test: {
     globals: true,
     environment: 'node',
@@ -25,7 +28,7 @@ export default defineConfig({
   resolve: {
     alias: {
       // Ensure we're testing against the source files
-      'fastmcp-cloudflare': './src/index.ts',
+      'fastmcp-cloudflare': path.resolve(__dirname, './src/index.ts'),
     },
     conditions: ['node', 'import', 'module', 'default'],
     // More aggressive module resolution
