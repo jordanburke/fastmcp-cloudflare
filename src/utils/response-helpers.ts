@@ -8,19 +8,19 @@
 export function createJsonResponse(
   data: any,
   options: {
-    status?: number;
-    headers?: Record<string, string>;
-  } = {}
+    status?: number
+    headers?: Record<string, string>
+  } = {},
 ): Response {
-  const { status = 200, headers = {} } = options;
+  const { status = 200, headers = {} } = options
 
   return new Response(JSON.stringify(data), {
     status,
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...headers,
     },
-  });
+  })
 }
 
 /**
@@ -28,16 +28,16 @@ export function createJsonResponse(
  */
 export function createErrorResponse(
   error: {
-    code: number;
-    message: string;
-    data?: any;
+    code: number
+    message: string
+    data?: any
   },
   options: {
-    status?: number;
-    headers?: Record<string, string>;
-  } = {}
+    status?: number
+    headers?: Record<string, string>
+  } = {},
 ): Response {
-  const { status = 500, headers = {} } = options;
+  const { status = 500, headers = {} } = options
 
   return new Response(
     JSON.stringify({
@@ -50,11 +50,11 @@ export function createErrorResponse(
     {
       status,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...headers,
       },
-    }
-  );
+    },
+  )
 }
 
 /**
@@ -63,56 +63,53 @@ export function createErrorResponse(
 export function createCorsResponse(
   request: Request,
   options: {
-    origins?: string[];
-    credentials?: boolean;
-    methods?: string[];
-    headers?: string[];
-  } = {}
+    origins?: string[]
+    credentials?: boolean
+    methods?: string[]
+    headers?: string[]
+  } = {},
 ): Response {
   const {
-    origins = ['*'],
+    origins = ["*"],
     credentials = false,
-    methods = ['GET', 'POST', 'OPTIONS'],
-    headers: allowedHeaders = ['Content-Type', 'Authorization'],
-  } = options;
+    methods = ["GET", "POST", "OPTIONS"],
+    headers: allowedHeaders = ["Content-Type", "Authorization"],
+  } = options
 
   const responseHeaders: Record<string, string> = {
-    'Access-Control-Allow-Methods': methods.join(', '),
-    'Access-Control-Allow-Headers': allowedHeaders.join(', '),
-  };
+    "Access-Control-Allow-Methods": methods.join(", "),
+    "Access-Control-Allow-Headers": allowedHeaders.join(", "),
+  }
 
-  const origin = request.headers.get('origin');
-  
-  if (origins.includes('*')) {
-    responseHeaders['Access-Control-Allow-Origin'] = '*';
+  const origin = request.headers.get("origin")
+
+  if (origins.includes("*")) {
+    responseHeaders["Access-Control-Allow-Origin"] = "*"
   } else if (origin && origins.includes(origin)) {
-    responseHeaders['Access-Control-Allow-Origin'] = origin;
+    responseHeaders["Access-Control-Allow-Origin"] = origin
   }
 
   if (credentials) {
-    responseHeaders['Access-Control-Allow-Credentials'] = 'true';
+    responseHeaders["Access-Control-Allow-Credentials"] = "true"
   }
 
   return new Response(null, {
     status: 204,
     headers: responseHeaders,
-  });
+  })
 }
 
 /**
  * Create a health check response
  */
-export function createHealthResponse(
-  status: 'ok' | 'error' = 'ok',
-  data?: any
-): Response {
+export function createHealthResponse(status: "ok" | "error" = "ok", data?: any): Response {
   const responseData = {
     status,
     timestamp: new Date().toISOString(),
     ...(data && { data }),
-  };
+  }
 
   return createJsonResponse(responseData, {
-    status: status === 'ok' ? 200 : 503,
-  });
+    status: status === "ok" ? 200 : 503,
+  })
 }

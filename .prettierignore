@@ -1,0 +1,12 @@
+node_modules
+dist
+build
+.pnpm-store
+pnpm-lock.yaml
+*.log
+.env
+coverage
+.wrangler
+examples/*/node_modules
+examples/*/dist
+examples/*/.wrangler
